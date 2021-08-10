@@ -64,14 +64,25 @@ const Contact = ({ contact, contactKey }) => {
     // dispatching one action to update contact
     //TODO: use dispatch to update
 
+    dispatch({
+      type: CONTACT_TO_UPDATE,
+      payload: contact,
+      key: contactKey,
+    });
+
     // and pushing to the add contact screen
     history.push("/contact/add");
   };
 
   // to view a single contact in the contact/view screen
-  const viewSingleContact = (contact) => {
+  const viewSingleContact = contact => {
     // setting single contact in state
     //TODO: use dispatch to view single contact
+
+    dispatch ({
+      type: SET_SINGLE_CONTACT,
+      payload: contact
+    })
 
     // sending...
     history.push("/contact/view");
@@ -103,7 +114,7 @@ const Contact = ({ contact, contactKey }) => {
 
           <div className="text-secondary">{contact.phoneNumber}</div>
           <div className="text-secondary">
-            {/* {FIXME: display contact email}  */}
+            {contact.email}
           </div>
 
           <div className="text-info">{contact.address}</div>
