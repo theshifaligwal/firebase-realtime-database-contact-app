@@ -1,5 +1,7 @@
-//TODO: add firebase configuration and export it
-
+//TODO: DONE add firebase configuration and export it
+export const firebaseConfig = {
+  //TODO: ADD YOUR FIREBASE INFO HERE
+};
 //image configuration
 export const imageConfig = {
   quality: 0.2,

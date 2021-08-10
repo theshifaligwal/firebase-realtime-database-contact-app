@@ -157,7 +157,7 @@ const AddContact = () => {
           phoneNumber,
           address,
           picture: downloadUrl,
-          start,
+          star,
         });
     } catch (error) {
       console.log(error);
