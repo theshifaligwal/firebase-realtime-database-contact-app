@@ -13,7 +13,7 @@ import {
   Button,
   Spinner,
   Row,
-  Col
+  Col,
 } from "reactstrap";
 
 // to compress image before uploading to the server
@@ -21,6 +21,7 @@ import { readAndCompressImage } from "browser-image-resizer";
 
 // configs for image resizing
 //TODO: add image configurations
+import { imageConfig } from "../utils/config";
 
 import { MdAddCircleOutline } from "react-icons/md";
 
@@ -33,6 +34,7 @@ import { CONTACT_TO_UPDATE } from "../context/action.types";
 import { useHistory } from "react-router-dom";
 
 import { toast } from "react-toastify";
+import { switchCase } from "@babel/types";
 
 const AddContact = () => {
   // destructuring state and dispatch from context state
@@ -71,8 +73,62 @@ const AddContact = () => {
   }, [contactToUpdate]);
 
   // To upload image to firebase and then set the the image link in the state of the app
-  const imagePicker = async e => {
+  const imagePicker = async (e) => {
     // TODO: upload image and set D-URL to state
+    try {
+      const file = e.target.file[0];
+
+      var metadata = {
+        contentType: file.type,
+      };
+
+      let resizedImage = await readAndCompressImage(file, imageConfig);
+
+      const storageRef = await firebase.storage().ref();
+      var uploadTask = storageRef
+        .child("images/" + file.name)
+        .put(resizedImage, metadata);
+
+      uploadTask.on(
+        firebase.storage.TaskEvent.STATE_CHANGED,
+        (snapshot) => {
+          setIsUploading(true);
+          var progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED:
+              setIsUploading(false);
+              console.log("Uploading is paused");
+              break;
+
+            case firebase.storage.TaskState.RUNNING:
+              console.log("Uploading is in progress");
+              break;
+              break;
+          }
+          if (progress == 100) {
+            setIsUploading(false);
+            toast("uploading", { type: "success" });
+          }
+        },
+
+        (error) => {
+          toast("someting is wrong in state change", { type: "erro" });
+        },
+        () => {
+          uploadTask.snapshot.ref
+            .getDownloadURL()
+            .then((downloadUrl) => {
+              setDownloadUrl(downloadUrl);
+            })
+            .catch((err) => console.log(err));
+        }
+      );
+    } catch (error) {
+      console.error(error);
+      toast("Something went wrong", { type: "error" });
+    }
   };
 
   // setting contact to firebase DB
@@ -86,7 +142,7 @@ const AddContact = () => {
   };
 
   // firing when the user click on submit button or the form has been submitted
-  const handleSubmit = e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     // isUpdate wll be true when the user came to update the contact
@@ -97,7 +153,7 @@ const AddContact = () => {
     dispatch({
       type: CONTACT_TO_UPDATE,
       payload: null,
-      key: null
+      key: null,
     });
 
     // after adding/updating contact then sending to the contacts
@@ -126,7 +182,7 @@ const AddContact = () => {
                     id="imagepicker"
                     accept="image/*"
                     multiple={false}
-                    onChange={e => imagePicker(e)}
+                    onChange={(e) => imagePicker(e)}
                     className="hidden"
                   />
                 </div>
@@ -140,7 +196,7 @@ const AddContact = () => {
                 id="name"
                 placeholder="Name"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
               />
             </FormGroup>
             <FormGroup>
@@ -149,7 +205,7 @@ const AddContact = () => {
                 name="email"
                 id="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
               />
             </FormGroup>
@@ -159,7 +215,7 @@ const AddContact = () => {
                 name="number"
                 id="phonenumber"
                 value={phoneNumber}
-                onChange={e => setPhoneNumber(e.target.value)}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="phone number"
               />
             </FormGroup>
@@ -169,7 +225,7 @@ const AddContact = () => {
                 name="area"
                 id="area"
                 value={address}
-                onChange={e => setAddress(e.target.value)}
+                onChange={(e) => setAddress(e.target.value)}
                 placeholder="address"
               />
             </FormGroup>
