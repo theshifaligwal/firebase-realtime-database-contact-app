@@ -147,6 +147,22 @@ const AddContact = () => {
   // to handle update the contact when there is contact in state and the user had came from clicking the contact update icon
   const updateContact = async () => {
     //TODO: update contact method
+    try {
+      firebase
+        .database()
+        .ref("contacts/" + contactToUpdate)
+        .set({
+          name,
+          email,
+          phoneNumber,
+          address,
+          picture: downloadUrl,
+          start,
+        });
+    } catch (error) {
+      console.log(error);
+      toast("ooops...", { type: "error" });
+    }
   };
 
   // firing when the user click on submit button or the form has been submitted
