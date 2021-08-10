@@ -15,6 +15,10 @@ import "./App.css";
 
 // firebase stuffs
 //TODO: import firebase config and firebase database
+import {firebaseConfig} from "./utils/config"
+import firebase from "firebase/app"
+import "firebase/database"
+import "firebase/storage"
 
 // components
 import AddContact from "./pages/AddContact";
@@ -26,9 +30,14 @@ import PageNotFound from "./pages/PageNotFound";
 
 // context api stuffs
 //TODO: import reducers and contexts
+import reducer from "./context/reducer";
+import { ContactContext } from "./context/Context";
+import { SET_CONTACT, SET_LOADING, SET_SINGLE_CONTACT } from "./context/action.types";
+
 
 //initlizeing firebase app with the firebase config which are in ./utils/firebaseConfig
 //TODO: initialize FIREBASE
+firebase.initializeApp(firebaseConfig)
 
 // first state to provide in react reducer
 const initialState = {
@@ -45,17 +54,34 @@ const App = () => {
   // will get contacts from firebase and set it on state contacts array
   const getContacts = async () => {
     // TODO: load existing data
+    dispatch({
+      type: SET_LOADING,
+      payload: true
+    })
+
+    const contactsRef = await firebase.database().ref('/contacts')
+    contactsRef.on('value',snapshot => {
+      dispatch({
+        type: SET_CONTACT,
+        payload: snapshot.val()
+      });
+      dispatch({
+        type: SET_LOADING,
+        payload: false
+      })
+    })
+
   };
 
   // getting contact  when component did mount
   useEffect(() => {
     //FIXME: call methods if needed
+    getContacts()
   }, []);
 
   return (
     <Router>
-      {/* FIXME: Provider is not configured */}
-      <ContactContext.Provider>
+      <ContactContext.Provider value={{state, dispatch}}>
         <ToastContainer />
         <Header />
         <Container>
